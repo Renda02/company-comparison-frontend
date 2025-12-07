@@ -7,9 +7,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 interface ComparisonResultProps {
   result: string | null
   isLoading: boolean
+  company1?: string
+  company2?: string
 }
 
-export default function ComparisonResult({ result, isLoading }: ComparisonResultProps) {
+export default function ComparisonResult({ result, isLoading, company1, company2 }: ComparisonResultProps) {
   if (isLoading) {
     return (
       <Card className="border-border bg-card shadow-lg animate-in slide-in-from-bottom-4 duration-500">
@@ -47,39 +49,139 @@ export default function ComparisonResult({ result, isLoading }: ComparisonResult
 
   const parseComparison = (text: string) => {
     const lines = text.split("\n").filter((line) => line.trim())
-    const sections: { title: string; rows: { label: string; value: string }[] }[] = []
-    let currentSection: { title: string; rows: { label: string; value: string }[] } | null = null
-
+    const rows: { category: string; company1Value: string; company2Value: string }[] = []
+    
+    const company1Name = company1 || "Company 1"
+    const company2Name = company2 || "Company 2"
+    
+    let currentCategory = ""
+    
     lines.forEach((line) => {
-      // Check if it's a heading
+      // Check if it's a heading (category)
       if (line.match(/^#+\s/)) {
-        if (currentSection) sections.push(currentSection)
-        const title = line.replace(/^#+\s/, "")
-        currentSection = { title, rows: [] }
-      } else if (currentSection) {
-        // Parse bullet points or numbered lists into label-value pairs
-        const cleanLine = line.replace(/^[•\-*]\s/, "").replace(/^\d+\.\s/, "")
-
-        // Try to split on common delimiters like ":" or "-"
-        const colonMatch = cleanLine.match(/^([^:]+):\s*(.+)$/)
-        const dashMatch = cleanLine.match(/^([^-]+)\s+-\s+(.+)$/)
-
-        if (colonMatch) {
-          currentSection.rows.push({ label: colonMatch[1].trim(), value: colonMatch[2].trim() })
-        } else if (dashMatch) {
-          currentSection.rows.push({ label: dashMatch[1].trim(), value: dashMatch[2].trim() })
-        } else {
-          // If no delimiter, treat the whole line as a value with empty label
-          currentSection.rows.push({ label: "", value: cleanLine })
+        currentCategory = line.replace(/^#+\s/, "").trim()
+      } else if (line.match(/^\d+\.\s/)) {
+        // Numbered list items might be categories
+        const match = line.match(/^\d+\.\s*(.+)$/)
+        if (match) {
+          const content = match[1].trim()
+          // Check if it looks like a category (ends with colon or is short)
+          if (content.includes(":") || content.length < 50) {
+            currentCategory = content.replace(/:\s*$/, "").trim()
+          }
+        }
+      } else {
+        // Parse bullet points or content lines
+        const cleanLine = line.replace(/^[•\-*]\s/, "").replace(/^\d+\.\s/, "").trim()
+        
+        if (!cleanLine) return
+        
+        // Try to match patterns like "Category: Company1: value1; Company2: value2"
+        const categoryMatch = cleanLine.match(/^([^:]+):\s*(.+)$/)
+        
+        if (categoryMatch) {
+          const categoryName = categoryMatch[1].trim()
+          const value = categoryMatch[2].trim()
+          
+          // Try to extract company-specific values
+          let company1Value = ""
+          let company2Value = ""
+          
+          // Pattern 1: "Company1: value1; Company2: value2"
+          const companyPattern = new RegExp(
+            `(${company1Name}|${company2Name}):\\s*([^;]+)`,
+            "gi"
+          )
+          const companyMatches = [...value.matchAll(companyPattern)]
+          
+          if (companyMatches.length >= 2) {
+            companyMatches.forEach((match) => {
+              const matchedCompany = match[1]
+              const matchedValue = match[2].trim()
+              if (matchedCompany.toLowerCase() === company1Name.toLowerCase()) {
+                company1Value = matchedValue
+              } else if (matchedCompany.toLowerCase() === company2Name.toLowerCase()) {
+                company2Value = matchedValue
+              }
+            })
+          } else {
+            // Pattern 2: Split by semicolon or pipe
+            const parts = value.split(/[;|]/).map((p) => p.trim()).filter(p => p)
+            if (parts.length >= 2) {
+              company1Value = parts[0]
+              company2Value = parts[1]
+            } else if (parts.length === 1) {
+              // Single value - try to split by "vs" or similar
+              const vsMatch = parts[0].match(/^(.+?)\s+(?:vs|versus|compared to)\s+(.+)$/i)
+              if (vsMatch) {
+                company1Value = vsMatch[1].trim()
+                company2Value = vsMatch[2].trim()
+              } else {
+                company1Value = parts[0]
+                company2Value = parts[0]
+              }
+            }
+          }
+          
+          if (company1Value || company2Value) {
+            rows.push({
+              category: categoryName || currentCategory,
+              company1Value: company1Value || "—",
+              company2Value: company2Value || "—",
+            })
+          }
+        } else if (currentCategory) {
+          // If we have a current category and the line doesn't match a pattern,
+          // try to extract comparison from the line itself
+          const vsMatch = cleanLine.match(/^(.+?)\s+(?:vs|versus|compared to)\s+(.+)$/i)
+          if (vsMatch) {
+            rows.push({
+              category: currentCategory,
+              company1Value: vsMatch[1].trim(),
+              company2Value: vsMatch[2].trim(),
+            })
+          } else {
+            // Try splitting by common separators
+            const parts = cleanLine.split(/[;|]/).map((p) => p.trim()).filter(p => p)
+            if (parts.length >= 2) {
+              rows.push({
+                category: currentCategory,
+                company1Value: parts[0],
+                company2Value: parts[1],
+              })
+            }
+          }
         }
       }
     })
-
-    if (currentSection) sections.push(currentSection)
-    return sections
+    
+    // If no structured data found, try to extract from headings and their following content
+    if (rows.length === 0) {
+      let lastCategory = ""
+      lines.forEach((line, idx) => {
+        const trimmed = line.trim()
+        if (trimmed.match(/^#+\s/)) {
+          lastCategory = trimmed.replace(/^#+\s/, "").trim()
+        } else if (lastCategory && trimmed && !trimmed.match(/^#+\s/)) {
+          const cleanLine = trimmed.replace(/^[•\-*]\s/, "").replace(/^\d+\.\s/, "").trim()
+          const parts = cleanLine.split(/[;|]/).map((p) => p.trim()).filter(p => p)
+          if (parts.length >= 2) {
+            rows.push({
+              category: lastCategory,
+              company1Value: parts[0],
+              company2Value: parts[1],
+            })
+          }
+        }
+      })
+    }
+    
+    return rows
   }
 
-  const sections = parseComparison(result)
+  const tableRows = parseComparison(result)
+  const company1Name = company1 || "Company A"
+  const company2Name = company2 || "Company B"
 
   return (
     <Card className="border-border bg-card shadow-lg animate-in slide-in-from-bottom-4 duration-500">
@@ -90,34 +192,48 @@ export default function ComparisonResult({ result, isLoading }: ComparisonResult
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-8">
-          {sections.map((section, idx) => (
-            <div key={idx} className="space-y-3">
-              <h3 className="text-lg font-bold text-foreground border-b-2 border-primary/30 pb-2">{section.title}</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse">
-                  <tbody>
-                    {section.rows.map((row, rowIdx) => (
-                      <tr key={rowIdx} className="border-b border-border/50 hover:bg-muted/30 transition-colors">
-                        {row.label ? (
-                          <>
-                            <td className="py-3 px-4 text-sm font-semibold text-foreground/80 align-top w-1/3">
-                              {row.label}
-                            </td>
-                            <td className="py-3 px-4 text-sm text-foreground leading-relaxed">{row.value}</td>
-                          </>
-                        ) : (
-                          <td colSpan={2} className="py-3 px-4 text-sm text-foreground leading-relaxed">
-                            {row.value}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="py-4 px-6 text-left text-sm font-bold text-foreground">
+                  Category
+                </th>
+                <th className="py-4 px-6 text-left text-sm font-bold text-foreground">
+                  {company1Name}
+                </th>
+                <th className="py-4 px-6 text-left text-sm font-bold text-foreground">
+                  {company2Name}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.length > 0 ? (
+                tableRows.map((row, rowIdx) => (
+                  <tr
+                    key={rowIdx}
+                    className="border-b border-border/50 hover:bg-muted/20 transition-colors"
+                  >
+                    <td className="py-4 px-6 text-sm font-semibold text-foreground align-top">
+                      {row.category}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-foreground leading-relaxed">
+                      {row.company1Value}
+                    </td>
+                    <td className="py-4 px-6 text-sm text-foreground leading-relaxed">
+                      {row.company2Value}
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={3} className="py-8 px-6 text-center text-sm text-muted-foreground">
+                    Unable to parse comparison data. Please try again.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </CardContent>
     </Card>

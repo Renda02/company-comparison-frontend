@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
-import { Building2, Shield } from "lucide-react"
+import { Building2, Shield, Settings } from "lucide-react"
 
 interface CompanyComparisonFormProps {
   onSubmit: (company1: string, company2: string) => void
@@ -36,7 +36,7 @@ export default function CompanyComparisonForm({ onSubmit, isLoading, apiKey }: C
             <div className="space-y-3">
               <Label htmlFor="company1" className="text-base font-semibold flex items-center gap-2 text-foreground">
                 <Building2 className="w-5 h-5 text-muted-foreground" />
-                Company Name 1
+                Company A
               </Label>
               <Input
                 id="company1"
@@ -53,7 +53,7 @@ export default function CompanyComparisonForm({ onSubmit, isLoading, apiKey }: C
             <div className="space-y-3">
               <Label htmlFor="company2" className="text-base font-semibold flex items-center gap-2 text-foreground">
                 <Building2 className="w-5 h-5 text-muted-foreground" />
-                Company Name 2
+                Company B
               </Label>
               <Input
                 id="company2"
@@ -70,8 +70,11 @@ export default function CompanyComparisonForm({ onSubmit, isLoading, apiKey }: C
 
           {!apiKey && (
             <div className="p-4 rounded-lg bg-[#3d3d2a] border border-[#4a4a34]">
-              <p className="text-[#d4a755] text-sm text-center">
-                Please configure your OpenAI API key in the settings (top-right corner) before comparing.
+              <p className="text-[#d4a755] text-sm text-center flex items-center justify-center gap-1.5">
+                To compare companies, configure your OpenAI API key in the settings{" "}
+                <span className="inline-flex items-center">
+                  (<Settings className="w-3.5 h-3.5" />)
+                </span>.
               </p>
             </div>
           )}
