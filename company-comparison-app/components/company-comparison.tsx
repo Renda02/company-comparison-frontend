@@ -9,15 +9,19 @@ export default function CompanyComparison() {
   const [comparison, setComparison] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [apiKey, setApiKey] = useState("")
+  const [company1, setCompany1] = useState<string>("")
+  const [company2, setCompany2] = useState<string>("")
 
-  const handleComparison = async (company1: string, company2: string) => {
+  const handleComparison = async (company1Name: string, company2Name: string) => {
+    setCompany1(company1Name)
+    setCompany2(company2Name)
     setIsLoading(true)
     setComparison(null)
 
     try {
       console.log("[v0] Request data being sent to OpenAI:", {
-        company1,
-        company2,
+        company1: company1Name,
+        company2: company2Name,
         model: "gpt-4o-mini",
         timestamp: new Date().toISOString(),
       })
@@ -28,11 +32,11 @@ export default function CompanyComparison() {
           {
             role: "system",
             content:
-              "You are a business analyst expert. Provide detailed, well-structured comparisons of companies based on their market position, business model, products/services, and competitive advantages. Use bullet points and clear sections.",
+              "You are a business analyst expert. Provide detailed, well-structured comparisons of companies. Format your response with clear category headings (##) followed by comparison points. For each category, use the format: 'Category Name: [Company1Name]: description for company 1; [Company2Name]: description for company 2'. Each category should be on its own line with a heading, followed by the comparison in the specified format.",
           },
           {
             role: "user",
-            content: `Compare ${company1} and ${company2}. Provide a comprehensive analysis covering:
+            content: `Compare ${company1Name} and ${company2Name}. Provide a comprehensive analysis covering these categories:
 1. Company Overview
 2. Market Position
 3. Key Products/Services
@@ -40,6 +44,10 @@ export default function CompanyComparison() {
 5. Competitive Advantages
 6. Recent Performance
 7. Future Outlook
+
+For each category, use this exact format:
+## Category Name
+Category Name: [${company1Name}]: description; [${company2Name}]: description
 
 Make it informative and easy to understand.`,
           },
@@ -113,7 +121,14 @@ Make it informative and easy to understand.`,
       <div className="space-y-8">
         <CompanyComparisonForm onSubmit={handleComparison} isLoading={isLoading} apiKey={apiKey} />
 
-        {(comparison || isLoading) && <ComparisonResult result={comparison} isLoading={isLoading} />}
+        {(comparison || isLoading) && (
+          <ComparisonResult 
+            result={comparison} 
+            isLoading={isLoading} 
+            company1={company1}
+            company2={company2}
+          />
+        )}
       </div>
     </div>
   )
