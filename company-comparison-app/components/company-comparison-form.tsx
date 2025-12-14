@@ -23,6 +23,8 @@ export default function CompanyComparisonForm({ onSubmit, isLoading, apiKey }: C
     e.preventDefault()
     if (company1.trim() && company2.trim() && apiKey.trim()) {
       onSubmit(company1.trim(), company2.trim())
+      setCompany1("")  // ← ADD THIS LINE
+      setCompany2("")  // ← ADD THIS LINE
     }
   }
 
