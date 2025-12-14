@@ -45,6 +45,7 @@ export default function CompanyComparisonForm({ onSubmit, isLoading, apiKey }: C
                 type="text"
                 placeholder="e.g., OpenAI"
                 value={company1}
+                autoComplete="off" 
                 onChange={(e) => setCompany1(e.target.value)}
                 disabled={isLoading}
                 className="h-12 bg-background border-input transition-colors focus:border-primary text-base"
@@ -62,6 +63,7 @@ export default function CompanyComparisonForm({ onSubmit, isLoading, apiKey }: C
                 type="text"
                 placeholder="e.g., Anthropic"
                 value={company2}
+                autoComplete="off" 
                 onChange={(e) => setCompany2(e.target.value)}
                 disabled={isLoading}
                 className="h-12 bg-background border-input transition-colors focus:border-primary text-base"
