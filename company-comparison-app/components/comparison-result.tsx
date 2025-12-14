@@ -89,7 +89,7 @@ export default function ComparisonResult({ result, isLoading, company1, company2
           
           // Pattern 1: "Company1: value1; Company2: value2"
           const companyPattern = new RegExp(
-            `(${company1Name}|${company2Name}):\\s*([^;]+)`,
+            `\\[?(${company1Name}|${company2Name})\\]?:\\s*([^;\\[]+?)(?=\\s*;|\\s*\\[|$)`,
             "gi"
           )
           const companyMatches = [...value.matchAll(companyPattern)]
