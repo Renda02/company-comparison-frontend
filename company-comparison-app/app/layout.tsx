@@ -10,7 +10,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "AI Company Comparison",
   description:
-    "Compare any two companies side-by-side with intelligent analysis across 7 comprehensive business metrics.",
+    "Get instant comparisons across 7 key business dimensions.",
   generator: "v0.app",
   icons: {
     icon: [
