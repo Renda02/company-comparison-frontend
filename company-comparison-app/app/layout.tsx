@@ -8,9 +8,9 @@ const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "AI Company Comparison | Compare Businesses with GPT-4o-mini",
+  title: "AI Company Comparison",
   description:
-    "Use OpenAI GPT-4o-mini to compare companies based on market position, business model, and competitive advantages. Get instant AI-powered business insights.",
+    "Compare any two companies side-by-side with intelligent analysis across 7 comprehensive business metrics.",
   generator: "v0.app",
   icons: {
     icon: [

@@ -62,7 +62,7 @@ export default function SettingsDialog({ apiKey, onApiKeyChange }: SettingsDialo
               className="h-12 bg-background border-input transition-colors focus:border-primary font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground">
-              Your API key is stored locally and never sent to our servers.
+            Your API key is not stored or saved. It's only used in your browser session.
             </p>
           </div>
         </div>
