@@ -32,7 +32,7 @@ export default function CompanyComparison() {
           {
             role: "system",
             content:
-              "You are a business analyst expert. Provide detailed, well-structured comparisons of companies. Format your response with clear category headings (##) followed by comparison points. For each category, use the format: 'Category Name: [Company1Name]: description for company 1; [Company2Name]: description for company 2'. Each category should be on its own line with a heading, followed by the comparison in the specified format.",
+              "You are a business analyst expert. Provide detailed, well-structured comparisons of companies. Format your response with clear category headings (##) followed by comparison points. For each category, use the format: 'Category Name: [Company1Name]: description for company 1; [Company2Name]: description for company 2'. Each category should be on its own line with a heading, followed by the comparison in the specified format. Include “Unknown” where appropriate rather than assuming.",
           },
           {
             role: "user",
@@ -49,10 +49,11 @@ For each category, use this exact format:
 ## Category Name
 Category Name: [${company1Name}]: description; [${company2Name}]: description
 
-Make it informative and easy to understand.`,
+Make it informative and easy to understand. 
+Do not guess or invent facts. If a fact is uncertain, say Unknown Prefer omission over fabrication. State uncertainty explicitly when applicable.`,
           },
         ],
-        temperature: 0.7,
+        temperature: 0.3,
         max_tokens: 1500,
       }
 
