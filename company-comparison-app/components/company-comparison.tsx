@@ -114,8 +114,7 @@ Do not guess or invent facts. If a fact is uncertain, say Unknown Prefer omissio
           </span>
         </h1>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto text-pretty">
-          Leverage OpenAI's GPT-4o-mini to analyze and compare companies based on market position, business model, and
-          competitive advantages.
+        Compare any two companies side-by-side with intelligent analysis across 7 comprehensive business metrics.
         </p>
       </div>
 
